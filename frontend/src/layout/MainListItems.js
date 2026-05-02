@@ -75,18 +75,34 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: 10,
     marginTop: 10,
     backgroundColor: theme.palette.sair.main,
-    color: theme.palette.text.sair,
+    color: '#FFFFFF',
+    '& .MuiListItemIcon-root': {
+      color: '#FFFFFF',
+    },
+    '& .MuiListItemText-root span': {
+      color: '#FFFFFF',
+    },
     '&:hover': {
-      backgroundColor: theme.palette.sair.dark,
+      backgroundColor: '#28a745',
     }
   },
   listItem: {
-    borderRadius: 8,
-    margin: '4px 8px',
-
+    borderRadius: '8px',
+    margin: '1px 0px 1px 4px',
     justifyContent: collapsed => collapsed ? 'center' : 'flex-start',
-    minHeight: 48,
-    padding: collapsed => collapsed ? '8px 12px' : '8px 16px',
+    minHeight: 36,
+    padding: collapsed => collapsed ? '4px 8px' : '4px 12px',
+    transition: 'background-color 0.2s ease',
+    '&:hover': {
+      backgroundColor: '#28a745',
+      color: '#FFFFFF',
+      '& .MuiListItemIcon-root': {
+        color: '#FFFFFF',
+      },
+      '& .MuiListItemText-root span': {
+        color: '#FFFFFF',
+      },
+    },
   },
   listItemIcon: {
     minWidth: collapsed => collapsed ? 0 : 40,
@@ -114,8 +130,8 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 600,
     textTransform: "uppercase",
     letterSpacing: "0.5px",
-    marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(1),
+    marginTop: theme.spacing(1),
+    marginBottom: theme.spacing(0.5),
     opacity: collapsed => collapsed ? 0 : 1,
     transition: 'opacity 0.2s ease',
     display: collapsed => collapsed ? 'none' : 'block',
@@ -161,9 +177,11 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 500,
   },
   menuWrapper: {
-    width: collapsed => collapsed ? 40 : 280,
+    width: collapsed => collapsed ? 40 : 300,
     transition: 'width 0.3s ease',
-    overflow: 'hidden',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    paddingRight: '8px',
   },
   versionContainer: {
     fontSize: "12px", 

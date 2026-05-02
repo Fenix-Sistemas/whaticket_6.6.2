@@ -997,6 +997,10 @@ const MessagesList = ({ ticket, ticketId, isGroup, onMessagesLoad }) => {
   const renderMessages = () => {
     if (messagesList.length > 0) {
       const viewMessagesList = messagesList.map((message, index) => {
+        if (message.mediaType === "protocolMessage") {
+          return null;
+        }
+
         if (message.mediaType === "call_log") {
           return (
             <React.Fragment key={message.id}>
@@ -1086,15 +1090,13 @@ const MessagesList = ({ ticket, ticketId, isGroup, onMessagesLoad }) => {
                   </div>
                 )}
 
-                {(message.mediaUrl || message.mediaType === "locationMessage" || message.mediaType === "vcard" || message.mediaType === "contactMessage" || message.mediaType === "document" || message.mediaType === "application" || message.mediaType === "documentMessage" || message.mediaType === "documentWithCaptionMessage"
+                {(message.mediaUrl || message.mediaType === "locationMessage" || message.mediaType === "vcard" || message.mediaType === "contactMessage" || message.mediaType === "document" || message.mediaType === "application" || message.mediaType === "documentMessage" || message.mediaType === "documentWithCaptionMessage" || message.mediaType === "sticker" || message.mediaType === "gif" || message.mediaType === "image" || message.mediaType === "video" || message.mediaType === "audio"
                 ) && checkMessageMedia(message)}
                 <div className={message.isEdited ? classes.textContentItemEdited : classes.textContentItem}>
                   {message.quotedMsg && renderQuotedMessage(message)}
-                  {message.mediaType !== "reactionMessage" && message.mediaType !== "audio" && message.mediaType !== "document" && message.mediaType !== "application" && message.mediaType !== "documentMessage" && message.mediaType !== "documentWithCaptionMessage" && message.mediaType !== "sticker" && message.mediaType !== "image" && message.mediaType !== "video" && message.mediaType !== "gif" && (
+                  {message.mediaType !== "reactionMessage" && message.mediaType !== "audio" && message.mediaType !== "sticker" && message.mediaType !== "locationMessage" && message.mediaType !== "contactMessage" && (
                     <MarkdownWrapper>
-                      {message.mediaType === "locationMessage" || message.mediaType === "contactMessage"
-                        ? null
-                        : message.body}
+                      {message.body}
                     </MarkdownWrapper>
                   )}
                   {message.quotedMsg && message.mediaType === "reactionMessage" && (
@@ -1161,14 +1163,19 @@ const MessagesList = ({ ticket, ticketId, isGroup, onMessagesLoad }) => {
                   })}
                 >
                   {message.isDeleted && (
-                    <Block
-                      color="disabled"
-                      fontSize="small"
-                      className={classes.deletedIcon}
-                    />
+                    <div>
+                      <span className={"message-deleted"}
+                      >Essa mensagem foi apagada &nbsp;
+                        <Block
+                          color="disabled"
+                          fontSize="small"
+                          className={classes.deletedIcon}
+                        />
+                      </span>
+                    </div>
                   )}
                   {message.quotedMsg && renderQuotedMessage(message)}
-                  {message.mediaType !== "reactionMessage" && message.mediaType !== "locationMessage" && message.mediaType !== "contactMessage" && message.mediaType !== "audio" && message.mediaType !== "document" && message.mediaType !== "application" && message.mediaType !== "documentMessage" && message.mediaType !== "documentWithCaptionMessage" && message.mediaType !== "sticker" && message.mediaType !== "image" && message.mediaType !== "video" && message.mediaType !== "gif" && (
+                  {message.mediaType !== "reactionMessage" && message.mediaType !== "locationMessage" && message.mediaType !== "contactMessage" && message.mediaType !== "audio" && message.mediaType !== "sticker" && (
                     <MarkdownWrapper>{message.body}</MarkdownWrapper>
                   )}
                   {message.quotedMsg && message.mediaType === "reactionMessage" && (

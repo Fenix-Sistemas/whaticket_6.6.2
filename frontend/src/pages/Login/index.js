@@ -21,148 +21,191 @@ import { i18n } from "../../translate/i18n";
 import { AuthContext } from "../../context/Auth/AuthContext";
 
 const useStyles = makeStyles((theme) => ({
+  "@keyframes floatDots": {
+    "0%": { transform: "translate(0, 0)" },
+    "100%": { transform: "translate(50px, 50px)" }
+  },
+  "@keyframes fadeInUp": {
+    "0%": { opacity: 0, transform: "translateY(20px)" },
+    "100%": { opacity: 1, transform: "translateY(0)" }
+  },
   root: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: theme.palette.type === 'dark' 
-      ? 'linear-gradient(135deg, #121212 0%, #1e1e1e 100%)' 
-      : 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
-    position: 'relative',
-    overflow: 'hidden',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: '50vh',
-      background: theme.palette.primary.dark, // Usando primary.dark
-      borderBottomLeftRadius: '50% 20%',
-      borderBottomRightRadius: '50% 20%',
-      zIndex: 0,
-    }
+    minHeight: "100vh",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    background: theme.palette.type === "dark"
+      ? "linear-gradient(135deg, #121212 0%, #1e1e1e 100%)"
+      : "linear-gradient(135deg, #0066cc 0%, #0099ff 100%)",
+    position: "relative",
+    overflow: "hidden"
+  },
+  bgPattern: {
+    position: "absolute",
+    top: "-50%",
+    left: "-50%",
+    width: "200%",
+    height: "200%",
+    background: "radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px)",
+    backgroundSize: "40px 40px",
+    animation: "$floatDots 20s infinite linear",
+    zIndex: 0,
+    pointerEvents: "none"
+  },
+  decorativeCircle1: {
+    position: "absolute",
+    width: 300,
+    height: 300,
+    top: -150,
+    left: -150,
+    borderRadius: "50%",
+    background: theme.palette.type === "dark"
+      ? "rgba(255,255,255,0.03)"
+      : "rgba(255,255,255,0.08)",
+    zIndex: 0,
+    pointerEvents: "none"
+  },
+  decorativeCircle2: {
+    position: "absolute",
+    width: 200,
+    height: 200,
+    bottom: -100,
+    right: -100,
+    borderRadius: "50%",
+    background: theme.palette.type === "dark"
+      ? "rgba(255,255,255,0.03)"
+      : "rgba(255,255,255,0.08)",
+    zIndex: 0,
+    pointerEvents: "none"
+  },
+  decorativeCircle3: {
+    position: "absolute",
+    width: 150,
+    height: 150,
+    top: "20%",
+    right: "10%",
+    borderRadius: "50%",
+    background: theme.palette.type === "dark"
+      ? "rgba(255,255,255,0.02)"
+      : "rgba(255,255,255,0.06)",
+    zIndex: 0,
+    pointerEvents: "none"
   },
   loginContainer: {
-    position: 'relative',
-    width: '100%',
-    maxWidth: 400,
+    position: "relative",
+    width: "100%",
+    maxWidth: 420,
     margin: theme.spacing(2),
     zIndex: 1,
+    animation: "$fadeInUp 0.6s ease-out"
   },
   loginCard: {
-    padding: theme.spacing(4, 3),
+    padding: theme.spacing(3, 3, 3),
+    paddingTop: 30,
     borderRadius: 16,
-    boxShadow: theme.shadows[4],
+    boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
     background: theme.palette.background.paper,
-    textAlign: 'center',
-    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-    '&:hover': {
-      transform: 'translateY(-5px)',
-      boxShadow: theme.shadows[6],
+    textAlign: "center",
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    "&:hover": {
+      transform: "translateY(-3px)",
+      boxShadow: "0 12px 40px rgba(0,0,0,0.2)"
     }
   },
-  logoContainer: {
-    width: 100,
-    height: 100,
-    margin: '0 auto -50px',
-    borderRadius: '50%',
-    background: theme.palette.primary.dark,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: theme.shadows[4],
-    border: '4px solid ' + (theme.palette.type === 'dark' ? theme.palette.grey[900] : 'white'),
-    position: 'relative',
-    zIndex: 2,
-    overflow: 'hidden',
-    '& img': {
-      width: '95%',
-      height: '95%',
-      objectFit: 'contain',
-      display: 'block',
-    }
+  logoImage: {
+    width: 300,
+    height: "auto",
+    maxHeight: 180,
+    objectFit: "contain",
+    display: "block",
+    margin: "16px auto 8px"
+  },
+  welcomeText: {
+    color: theme.palette.text.secondary,
+    fontSize: "1.15rem",
+    fontWeight: 400,
+    marginBottom: 0
+  },
+  systemTitle: {
+    fontWeight: 700,
+    fontSize: "1.75rem",
+    background: "linear-gradient(135deg, #0066cc, #0099ff)",
+    WebkitBackgroundClip: "text",
+    WebkitTextFillColor: "transparent",
+    marginBottom: theme.spacing(1)
   },
   formTitle: {
-    margin: theme.spacing(5, 0, 3),
+    margin: theme.spacing(0, 0, 1),
     color: theme.palette.text.primary,
-    fontWeight: 700,
+    fontWeight: 600,
+    fontSize: "1.25rem"
   },
   form: {
-    width: '100%',
-    marginTop: theme.spacing(3),
+    width: "100%",
+    marginTop: theme.spacing(0)
   },
   inputField: {
-    marginBottom: theme.spacing(2),
-    '& .MuiOutlinedInput-root': {
+    marginBottom: theme.spacing(1),
+    "& .MuiOutlinedInput-root": {
       borderRadius: 8,
       backgroundColor: theme.palette.background.default,
-      '& fieldset': {
-        borderColor: theme.palette.divider,
+      "& fieldset": {
+        borderColor: theme.palette.divider
       },
-      '&:hover fieldset': {
-        borderColor: theme.palette.primary.light,
+      "&:hover fieldset": {
+        borderColor: theme.palette.primary.light
       },
-      '&.Mui-focused fieldset': {
+      "&.Mui-focused fieldset": {
         borderColor: theme.palette.primary.main,
-        boxShadow: `0 0 0 2px ${theme.palette.primary.light}`,
-      },
+        boxShadow: "0 0 0 2px " + theme.palette.primary.light
+      }
     },
-    '& .MuiInputLabel-root': {
+    "& .MuiInputLabel-root": {
       color: theme.palette.text.secondary,
-      '&.Mui-focused': {
-        color: theme.palette.primary.main,
-      },
-    },
+      "&.Mui-focused": {
+        color: theme.palette.primary.main
+      }
+    }
   },
   submitButton: {
-    margin: theme.spacing(3, 0, 2),
+    margin: theme.spacing(2, 0, 1),
     padding: theme.spacing(1.5),
     borderRadius: 8,
     fontWeight: 600,
-    fontSize: '1rem',
+    fontSize: "1rem",
     letterSpacing: 0.5,
-    textTransform: 'none',
-    boxShadow: 'none',
-    transition: 'all 0.2s ease',
-    '&:hover': {
-      transform: 'translateY(-2px)',
-      boxShadow: theme.shadows[4],
+    textTransform: "none",
+    boxShadow: "none",
+    transition: "all 0.2s ease",
+    "&:hover": {
+      transform: "translateY(-2px)",
+      boxShadow: theme.shadows[4]
     },
-    '&:active': {
-      transform: 'translateY(0)',
-    },
+    "&:active": {
+      transform: "translateY(0)"
+    }
   },
   linkText: {
     color: theme.palette.text.secondary,
     fontWeight: 500,
-    textDecoration: 'none',
-    display: 'inline-block',
+    textDecoration: "none",
+    display: "inline-block",
     margin: theme.spacing(1, 0),
-    transition: 'color 0.2s ease',
-    '&:hover': {
-      color: theme.palette.primary.main,
-    },
-  },
-  decorativeCircle: {
-    position: 'absolute',
-    borderRadius: '50%',
-    background: theme.palette.type === 'dark' 
-      ? 'rgba(255,255,255,0.05)' 
-      : 'rgba(255,255,255,0.1)',
-    zIndex: 0,
+    transition: "color 0.2s ease",
+    "&:hover": {
+      color: theme.palette.primary.main
+    }
   }
 }));
 
 const Login = () => {
     const theme = useTheme();
     const classes = useStyles();
-    const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+    const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
     const [user, setUser] = useState({ email: "", password: "" });
     const [showPassword, setShowPassword] = useState(false);
     const { handleLogin, loading } = useContext(AuthContext);
-    const [viewregister, setviewregister] = useState('disabled');
+    const [viewregister, setviewregister] = useState("disabled");
 
     const handleChangeInput = (e) => {
         setUser({ ...user, [e.target.name]: e.target.value });
@@ -182,7 +225,7 @@ const Login = () => {
             const viewregisterX = responsev?.data?.value;
             setviewregister(viewregisterX);
         } catch (error) {
-            console.error('Error retrieving viewregister', error);
+            console.error("Error retrieving viewregister", error);
         }
     };
 
@@ -197,20 +240,30 @@ const Login = () => {
 
     return (
         <div className={classes.root}>
-            {/* Decorative circles */}
-            <div className={classes.decorativeCircle} style={{ width: 300, height: 300, top: -150, left: -150 }} />
-            <div className={classes.decorativeCircle} style={{ width: 200, height: 200, bottom: -100, right: -100 }} />
-            
+            <div className={classes.bgPattern} />
+            <div className={classes.decorativeCircle1} />
+            <div className={classes.decorativeCircle2} />
+            <div className={classes.decorativeCircle3} />
+
             <div className={classes.loginContainer}>
-                <div className={classes.logoContainer}>
-                    <img src={logoWithRandom} alt="Logo" />
-                </div>
-                
                 <div className={classes.loginCard}>
-                    <Typography variant="h5" className={classes.formTitle}>
+                    <img
+                        src={logoWithRandom}
+                        alt="Logo"
+                        className={classes.logoImage}
+                    />
+
+                    <Typography className={classes.welcomeText}>
+                        Bem-vindo a
+                    </Typography>
+                    <Typography className={classes.systemTitle}>
+                        FENIX SISTEMAS
+                    </Typography>
+
+                    <Typography className={classes.formTitle}>
                         Acesse sua conta
                     </Typography>
-                    
+
                     <form className={classes.form} onSubmit={handlSubmit}>
                         <TextField
                             variant="outlined"
@@ -226,7 +279,7 @@ const Login = () => {
                             className={classes.inputField}
                             placeholder="seu@email.com"
                         />
-                        
+
                         <TextField
                             variant="outlined"
                             margin="normal"
@@ -248,7 +301,7 @@ const Login = () => {
                                             aria-label="toggle password visibility"
                                             onClick={handleClickShowPassword}
                                             edge="end"
-                                            color={theme.palette.type === 'dark' ? 'default' : 'primary'}
+                                            color={theme.palette.type === "dark" ? "default" : "primary"}
                                         >
                                             {showPassword ? <Visibility /> : <VisibilityOff />}
                                         </IconButton>
@@ -256,7 +309,7 @@ const Login = () => {
                                 ),
                             }}
                         />
-                        
+
                         <Button
                             type="submit"
                             fullWidth
@@ -271,7 +324,7 @@ const Login = () => {
                                 i18n.t("login.buttons.submit")
                             )}
                         </Button>
-                        
+
                         <Grid container justifyContent="space-between">
                             <Grid item>
                                 {viewregister === "enabled" && (

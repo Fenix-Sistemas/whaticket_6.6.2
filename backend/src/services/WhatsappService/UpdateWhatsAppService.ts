@@ -24,6 +24,8 @@ interface WhatsappData {
   pixMessage?: string;
   //sendIdQueue?: number;
   //timeSendQueue?: number;
+  chatbotInactivityTimeout?: number;
+  chatbotInactivityMessage?: string;
   transferQueueId?: number; 
   timeToTransfer?: number;    
   promptId?: number;
@@ -80,7 +82,9 @@ const UpdateWhatsAppService = async ({
     maxUseBotQueues,
     timeUseBotQueues,
     expiresTicket,
-    expiresInactiveMessage
+    expiresInactiveMessage,
+    chatbotInactivityTimeout,
+    chatbotInactivityMessage
   } = whatsappData;
 
   try {
@@ -134,7 +138,9 @@ const UpdateWhatsAppService = async ({
     maxUseBotQueues,
     timeUseBotQueues,
     expiresTicket,
-    expiresInactiveMessage
+    expiresInactiveMessage,
+    chatbotInactivityTimeout,
+    chatbotInactivityMessage
   });
 
   await AssociateWhatsappQueue(whatsapp, queueIds);

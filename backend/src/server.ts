@@ -7,6 +7,7 @@ import Company from "./models/Company";
 import { startQueueProcess } from "./queues";
 import { TransferTicketQueue } from "./wbotTransferTicketQueue";
 import BirthdayReminderService from "./services/BirthdayReminderService";
+import { startChatbotTimeoutWorker } from "./workers/ChatbotTimeoutWorker";
 import cron from "node-cron";
 
 
@@ -54,6 +55,9 @@ cron.schedule("*/5 * * * *", async () => {  // De 1 minuto para 5 minutos
     logger.error("Error in cron job:", error);
   }
 });
+
+// Inicia worker de timeout do chatbot
+startChatbotTimeoutWorker();
 
 // Executa verificação de aniversários - horário configurável por empresa
 // O horário será verificado dentro do serviço

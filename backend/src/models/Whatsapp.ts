@@ -161,6 +161,15 @@ class Whatsapp extends Model<Whatsapp> {
   @Default("")
   @Column(DataType.TEXT)
   pixMessage: string;
+  @Default(0)
+  @AllowNull
+  @Column(DataType.INTEGER)
+  chatbotInactivityTimeout: number;
+
+  @Default("")
+  @AllowNull
+  @Column(DataType.TEXT)
+  chatbotInactivityMessage: string;
   
   @Column
   expiresInactiveMessage: string;

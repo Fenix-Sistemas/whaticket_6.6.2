@@ -88,7 +88,9 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
     timeUseBotQueues: 0,
     maxUseBotQueues: 3,
     pix: "",
-    pixMessage: ""
+    pixMessage: "",
+    chatbotInactivityTimeout: 0,
+    chatbotInactivityMessage: ""
   };
   const [whatsApp, setWhatsApp] = useState(initialState);
   const [selectedQueueIds, setSelectedQueueIds] = useState([]);
@@ -209,6 +211,13 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
     };
     delete whatsappData["queues"];
     delete whatsappData["session"];
+    
+    // DEBUG: Log dos campos de timeout
+    console.log("DEBUG - Campos de timeout:", {
+      chatbotInactivityTimeout: whatsappData.chatbotInactivityTimeout,
+      chatbotInactivityMessage: whatsappData.chatbotInactivityMessage
+    });
+    console.log("DEBUG - Todos os dados:", whatsappData);
 
     try {
       if (whatsAppId) {
@@ -272,7 +281,7 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
         <Formik
           initialValues={whatsApp}
           enableReinitialize={true}
-          validationSchema={SessionSchema}
+          validationSchema={null}
           onSubmit={(values, actions) => {
             setTimeout(() => {
               handleSaveWhatsApp(values);
@@ -397,6 +406,33 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
                 <div>
                   <Field
                     as={TextField}
+                    label="Mensagem de Encerramento por Não Escolher Fila"
+                    type="text"
+                    multiline
+                    rows={4}
+                    fullWidth
+                    name="chatbotInactivityMessage"
+                    placeholder="Digite a mensagem que será enviada ao encerrar por inatividade"
+                    variant="outlined"
+                    margin="dense"
+                  />
+                </div>
+                <div>
+                  <Field
+                    as={TextField}
+                    label="Tempo sem Escolher Fila (minutos)"
+                    type="number"
+                    fullWidth
+                    name="chatbotInactivityTimeout"
+                    placeholder="Digite o tempo em minutos (0 para desabilitar)"
+                    variant="outlined"
+                    margin="dense"
+                    inputProps={{ min: 0 }}
+                  />
+                </div>
+                <div>
+                  <Field
+                    as={TextField}
                     label={i18n.t("queueModal.form.outOfHoursMessage")}
                     type="outOfHoursMessage"
                     multiline
@@ -412,6 +448,33 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
                     }
                     variant="outlined"
                     margin="dense"
+                  />
+                </div>
+                <div>
+                  <Field
+                    as={TextField}
+                    label={i18n.t("whatsappModal.form.expiresInactiveMessage")}
+                    multiline
+                    rows={4}
+                    fullWidth
+                    name="expiresInactiveMessage"
+                    error={touched.expiresInactiveMessage && Boolean(errors.expiresInactiveMessage)}
+                    helperText={touched.expiresInactiveMessage && errors.expiresInactiveMessage}
+                    variant="outlined"
+                    margin="dense"
+                  />
+                </div>
+                <div>
+                  <Field
+                    as={TextField}
+                    label={i18n.t("whatsappModal.form.expiresTicket")}
+                    type="number"
+                    fullWidth
+                    name="expiresTicket"
+                    placeholder="Digite o tempo em minutos (0 para desabilitar)"
+                    variant="outlined"
+                    margin="dense"
+                    inputProps={{ min: 0 }}
                   />
                 </div>
                 <div>
@@ -543,36 +606,6 @@ const WhatsAppModal = ({ open, onClose, whatsAppId }) => {
                   </Grid>
 
                   </Grid>
-                  <Grid spacing={2} container>
-                    {/* ENCERRAR CHATS ABERTOS APÓS X HORAS */}
-                    <Grid xs={12} md={12} item>
-                      <Field
-                        as={TextField}
-                        label={i18n.t("whatsappModal.form.expiresTicket")}
-                        fullWidth
-                        name="expiresTicket"
-                        variant="outlined"
-                        margin="dense"
-                        error={touched.expiresTicket && Boolean(errors.expiresTicket)}
-                        helperText={touched.expiresTicket && errors.expiresTicket}
-                      />
-                    </Grid>
-                  </Grid>
-                  {/* MENSAGEM POR INATIVIDADE*/}
-                  <div>
-                    <Field
-                      as={TextField}
-                      label={i18n.t("whatsappModal.form.expiresInactiveMessage")}
-                      multiline
-                      rows={4}
-                      fullWidth
-                      name="expiresInactiveMessage"
-                      error={touched.expiresInactiveMessage && Boolean(errors.expiresInactiveMessage)}
-                      helperText={touched.expiresInactiveMessage && errors.expiresInactiveMessage}
-                      variant="outlined"
-                      margin="dense"
-                    />
-                  </div>
                 </div>
                 {/* Recesso/Feriados */}
                 {whatsAppId && holidayPeriodEnabled === "enabled" && (

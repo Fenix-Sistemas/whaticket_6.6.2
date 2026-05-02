@@ -1,0 +1,169 @@
+import { Op } from "sequelize";
+import Ticket from "../models/Ticket";
+import TicketTraking from "../models/TicketTraking";
+import Whatsapp from "../models/Whatsapp";
+import Contact from "../models/Contact";
+import formatBody from "../helpers/Mustache";
+import { getWbot } from "../libs/wbot";
+import { getIO } from "../libs/socket";
+import { logger } from "../utils/logger";
+import UpdateTicketService from "../services/TicketServices/UpdateTicketService";
+
+let timeoutWorkerRunning = false;
+
+export const startChatbotTimeoutWorker = () => {
+  if (timeoutWorkerRunning) {
+    logger.info("[ChatbotTimeoutWorker] Worker ja esta rodando, pulando...");
+    return;
+  }
+
+  timeoutWorkerRunning = true;
+  logger.info("[ChatbotTimeoutWorker] Iniciando worker de timeout de inatividade do chatbot...");
+
+  // Executar verificacao a cada 30 segundos
+  setInterval(async () => {
+    try {
+      await checkChatbotInactivityTimeout();
+    } catch (error) {
+      logger.error("[ChatbotTimeoutWorker] Erro ao verificar timeout:", error);
+    }
+  }, 30000); // 30 segundos
+};
+
+const checkChatbotInactivityTimeout = async () => {
+  try {
+    // Buscar todos os tickets abertos em chatbot sem fila
+    const tickets = await Ticket.findAll({
+      where: {
+        status: "pending",
+        queueId: null,
+        chatbot: true,
+        isGroup: false
+      },
+      include: [
+        {
+          model: Whatsapp,
+          as: "whatsapp",
+          attributes: ["id", "chatbotInactivityTimeout", "chatbotInactivityMessage"]
+        },
+        {
+          model: Contact,
+          as: "contact",
+          attributes: ["id", "name", "number", "email", "profilePicUrl"]
+        }
+      ]
+    });
+
+    logger.info(`[ChatbotTimeoutWorker] Verificando ${tickets.length} tickets em chatbot`);
+    
+    if (tickets.length > 0) {
+      logger.info(`[ChatbotTimeoutWorker] Tickets encontrados:`, tickets.map(t => ({ id: t.id, status: t.status, queueId: t.queueId, chatbot: t.chatbot })));
+    }
+
+    for (const ticket of tickets) {
+      try {
+        // Buscar ticketTraking com chatbotAt
+        const ticketTraking = await TicketTraking.findOne({
+          where: {
+            ticketId: ticket.id,
+            chatbotAt: {
+              [Op.ne]: null
+            },
+            finishedAt: null
+          }
+        });
+
+        if (!ticketTraking) {
+          logger.info(`[ChatbotTimeoutWorker] Ticket ${ticket.id}: Nenhum TicketTraking encontrado`);
+          continue;
+        }
+        
+        if (!ticketTraking.chatbotAt) {
+          logger.info(`[ChatbotTimeoutWorker] Ticket ${ticket.id}: chatbotAt é null`);
+          continue;
+        }
+        
+        logger.info(`[ChatbotTimeoutWorker] Ticket ${ticket.id}: TicketTraking encontrado com chatbotAt=${ticketTraking.chatbotAt}`);
+
+        // Verificar se timeout esta configurado
+        if (!ticket.whatsapp) {
+          logger.info(`[ChatbotTimeoutWorker] Ticket ${ticket.id}: Whatsapp não encontrado`);
+          continue;
+        }
+        
+        if (!ticket.whatsapp.chatbotInactivityTimeout || Number(ticket.whatsapp.chatbotInactivityTimeout) <= 0) {
+          logger.info(`[ChatbotTimeoutWorker] Ticket ${ticket.id}: Timeout não configurado ou é 0`);
+          continue;
+        }
+        
+        logger.info(`[ChatbotTimeoutWorker] Ticket ${ticket.id}: Timeout configurado = ${ticket.whatsapp.chatbotInactivityTimeout} minutos`);
+
+        const now = new Date();
+        const chatbotAtTime = new Date(ticketTraking.chatbotAt);
+        const timeoutMs = Number(ticket.whatsapp.chatbotInactivityTimeout) * 60 * 1000;
+        const timeDiff = now.getTime() - chatbotAtTime.getTime();
+
+        logger.info(
+          `[ChatbotTimeoutWorker] Ticket ${ticket.id}: timeDiff=${timeDiff}ms, timeoutMs=${timeoutMs}ms, timeout atingido=${timeDiff >= timeoutMs}`
+        );
+
+        if (timeDiff >= timeoutMs) {
+          logger.info(`[ChatbotTimeoutWorker] ✓ TIMEOUT ATINGIDO para ticket ${ticket.id}. Encerrando...`);
+
+          // Enviar mensagem de timeout
+          if (ticket.whatsapp.chatbotInactivityMessage && ticket.whatsapp.chatbotInactivityMessage.trim() !== "") {
+            try {
+              const body = formatBody(`\u200e${ticket.whatsapp.chatbotInactivityMessage}`, ticket.contact);
+              const wbot = await getWbot(ticket.whatsappId);
+              
+              if (wbot) {
+                await wbot.sendMessage(
+                  `${ticket.contact.number}@${ticket.isGroup ? "g.us" : "s.whatsapp.net"}`,
+                  { text: body }
+                );
+                logger.info(`[ChatbotTimeoutWorker] ✓ Mensagem de timeout enviada para ticket ${ticket.id}`);
+              }
+            } catch (sendError) {
+              logger.error(`[ChatbotTimeoutWorker] Erro ao enviar mensagem para ticket ${ticket.id}:`, sendError);
+            }
+          }
+
+          // Fechar ticket com fromMe: true para evitar mensagem de encerramento normal
+          try {
+            await UpdateTicketService({
+              ticketData: {
+                status: "closed",
+                queueId: null,
+                chatbot: false,
+                fromMe: true
+              },
+              ticketId: ticket.id,
+              companyId: ticket.companyId
+            });
+            logger.info(`[ChatbotTimeoutWorker] ✓ Ticket ${ticket.id} encerrado com sucesso`);
+
+            // Emitir notificacao WebSocket
+            try {
+              const io = getIO();
+              io.to(`company-${ticket.companyId}-mainchannel`).emit(`company-${ticket.companyId}-ticket`, {
+                action: "update",
+                ticket: ticket
+              });
+            } catch (ioError) {
+              logger.warn(`[ChatbotTimeoutWorker] Erro ao emitir WebSocket para ticket ${ticket.id}:`, ioError);
+            }
+          } catch (updateError) {
+            logger.error(`[ChatbotTimeoutWorker] Erro ao atualizar ticket ${ticket.id}:`, updateError);
+          }
+        }
+        } else {
+          logger.info(`[ChatbotTimeoutWorker] Ticket ${ticket.id}: Timeout não atingido ainda (${(timeoutMs - timeDiff) / 1000}s restantes)`);
+        }
+      } catch (error) {
+        logger.error(`[ChatbotTimeoutWorker] Erro ao processar ticket:`, error);
+      }
+    }
+  } catch (error) {
+    logger.error("[ChatbotTimeoutWorker] ✗ Erro geral:", error);
+  }
+};
